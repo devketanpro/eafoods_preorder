@@ -1,108 +1,103 @@
 # EA Foods Preorder System
 
-
-A Django REST Framework (DRF) project for managing preorders, stock updates, and reporting of products. This project is fully Dockerized and uses **SQLite** as the database.
-
----
-
-## Table of Contents
-
-* [Features](#features)
-* [Tech Stack](#tech-stack)
-* [Project Structure](#project-structure)
-* [Setup Instructions](#setup-instructions)
-* [Docker Usage](#docker-usage)
-* [API Documentation](#api-documentation)
-* [Testing](#testing)
-* [Notes](#notes)
+This project is a Django-based backend for managing products, preorders, stock updates, and reports. It is designed with REST APIs using Django REST Framework (DRF) and is fully documented with Swagger UI.
 
 ---
 
 ## Features
 
-* User signup, login, logout with JWT authentication
-* Admin can create Ops Manager users
-* Stock management with time-based restrictions
-* Preorder creation and cancellation for customers
-* List orders by delivery slot
-* Top-selling products report
-* REST API endpoints documented via Swagger and Redoc
-
----
-
-## Tech Stack
-
-* Python 3.10
-* Django 5.x
-* Django REST Framework
-* SQLite (default database)
-* Docker & Docker Compose
-* drf-spectacular for API schema & documentation
+* JWT-based authentication for customers, admins, and ops managers.
+* Create, update, and cancel preorders.
+* Update stock with time restrictions.
+* List orders by delivery slots.
+* Top-selling product reports.
+* Fully documented API using DRF Spectacular (Swagger & Redoc).
 
 ---
 
 ## Project Structure
 
-```
-eafoods_preorder/
-├── eafoods_preorder/      # Django project settings
-├── preorder/              # App containing core features
-├── manage.py
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── README.md
-└── db.sqlite3
+```text
+eafoods_preorder/       # Django project folder
+├── settings.py         # Project settings
+├── urls.py             # Project URLs
+preorder/               # Main app
+├── models.py           # Database models
+├── views.py            # API views
+├── serializers.py      # Serializers
+├── urls.py             # App URLs
+├── management/commands/seed_products.py  # Seed initial products
+├── tests/              # Test cases
 ```
 
 ---
 
-## Setup Instructions (Local without Docker)
+## Setup Instructions (Local Development)
 
-1. Clone the repository:
+1. **Clone the repository**
 
 ```bash
 git clone https://github.com/devketanpro/eafoods_preorder.git
 cd eafoods_preorder
 ```
 
-2. Create a Python virtual environment:
+2. **Create and activate a virtual environment**
 
 ```bash
-python3 -m venv venv
+python -m venv venv
 source venv/bin/activate
 ```
 
-3. Install dependencies:
+3. **Install dependencies**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Set environment variables:
+4. **Set environment variables**
 
 ```bash
 export DJANGO_SETTINGS_MODULE=eafoods_preorder.settings
 ```
 
-5. Apply database migrations:
+5. **Run migrations**
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-6. Create a superuser:
+6. **Seed initial products**
+
+```bash
+python manage.py seed_products
+```
+
+7. **Create a superuser**
 
 ```bash
 python manage.py createsuperuser
 ```
 
-7. Run the server:
+8. **Start the development server**
 
 ```bash
 python manage.py runserver
 ```
+
+Server will be available at `http://127.0.0.1:8000/`
+
+---
+
+## API Documentation
+
+Swagger UI and Redoc are included:
+
+* Swagger: `http://127.0.0.1:8000/api/docs/`
+* Redoc: `http://127.0.0.1:8000/api/redoc/`
+* API Schema JSON: `http://127.0.0.1:8000/api/schema/`
+
+Use these endpoints to explore all API routes, request/response formats, and authentication requirements.
 
 ---
 
@@ -110,46 +105,62 @@ python manage.py runserver
 
 This project is fully Dockerized. The Docker Compose setup ensures all migrations are applied automatically and the server runs inside the container.
 
-**Steps to run:**
+### Steps to run:
 
-1. Build the Docker container:
+1. **Build the Docker container**
 
 ```bash
+cd eafoods_preorder
 sudo docker compose build
 ```
 
-2. Start the container:
+2. **Start the container**
 
 ```bash
-sudo docker compose up
+sudo docker compose up -d
 ```
 
-3. The Django server will be available at:
+3. **Enter the running container**
+
+```bash
+sudo docker compose exec web bash
+```
+
+4. **Apply migrations inside the container**
+
+```bash
+python manage.py migrate
+```
+
+5. **Seed initial products inside the container**
+
+```bash
+python manage.py seed_products
+```
+
+6. **Create a superuser inside the container**
+
+```bash
+python manage.py createsuperuser
+```
+
+7. **Access the server**
 
 ```
 http://localhost:8000
 ```
 
-**Notes:**
+8. **Access Swagger UI for API documentation**
 
-* SQLite database is used, so your data is persisted inside the container filesystem.
-* The container runs `makemigrations`, `migrate`, and `runserver` automatically.
-
----
-
-## API Documentation
-
-The API is documented using **drf-spectacular**:
-
-* **Swagger UI:** [http://localhost:8000/api/docs/](http://localhost:8000/api/docs/)
-* **Redoc:** [http://localhost:8000/api/redoc/](http://localhost:8000/api/redoc/)
-* **Schema JSON:** [http://localhost:8000/api/schema/](http://localhost:8000/api/schema/)
+```
+http://localhost:8000/api/docs/
+```
 
 ---
 
-## Testing
+## Running Tests
 
-Unit and integration tests are written using **pytest**:
+This project includes unit and integration tests.
 
 ```bash
 pytest preorder/tests/
@@ -157,21 +168,10 @@ pytest preorder/tests/
 
 ---
 
+
 ## Notes
 
-* Ensure Docker daemon is running before using `docker compose`.
-* Add `0.0.0.0` to `ALLOWED_HOSTS` in `eafoods_preorder/settings.py` for Docker deployment:
-
-```python
-ALLOWED_HOSTS = ["0.0.0.0", "localhost"]
-```
-
-* If ports are already in use, update the `docker-compose.yml` port mapping.
-
----
-
-## Author
-
-**Ketan Bamniya**
-Email: [devketanpro11@gmail.com](mailto:devketanpro11@gmail.com)
-GitHub: [devketanpro](https://github.com/devketanpro)
+* Make sure to use Python >=3.10.
+* Docker ensures consistent environment for all developers.
+* JWT authentication required for all protected endpoints.
+* Seed products command must be run once after migrations to populate initial product data.
