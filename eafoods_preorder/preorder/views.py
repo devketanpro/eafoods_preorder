@@ -24,6 +24,7 @@ from .serializers import (
 )
 
 
+@extend_schema(tags=["Authentication of Customer"])
 class SignupView(generics.CreateAPIView):
     """
     Public signup endpoint.
@@ -33,11 +34,12 @@ class SignupView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
 
+@extend_schema(tags=["Authentication of Customer"])
 class LoginView(TokenObtainPairView):
     """Login returns access + refresh tokens."""
     permission_classes = [AllowAny]
 
-
+@extend_schema(tags=["Authentication of Customer"])
 class LogoutView(APIView):
     """Logout blacklists refresh token."""
     permission_classes = [IsAuthenticated]
@@ -52,7 +54,7 @@ class LogoutView(APIView):
             return Response({"error": "Invalid refresh token"}, status=400)
         
  
-
+@extend_schema(tags=["Authentication of Ops Manager"])
 class OpsManagerCreateView(generics.CreateAPIView):
     """
     API endpoint to create an Ops Manager; accessible only to authenticated admin users.
@@ -71,7 +73,7 @@ class OpsManagerCreateView(generics.CreateAPIView):
         serializer.save(role="ops_manager")
 
 
-
+@extend_schema(tags=["Public Product and Delivery Slot Information"])
 class ProductListView(generics.ListAPIView):
     """
     Public endpoint: List all products.
@@ -83,7 +85,7 @@ class ProductListView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-
+@extend_schema(tags=["Public Product and Delivery Slot Information"])
 class DeliverySlotListView(generics.ListAPIView):
     """
     Public endpoint: List all available delivery slots.
@@ -94,7 +96,7 @@ class DeliverySlotListView(generics.ListAPIView):
     queryset = DeliverySlot.objects.all()
     serializer_class = DeliverySlotSerializer
 
-
+@extend_schema(tags=["Ops Manager Stock Management"])
 class StockUpdateView(generics.UpdateAPIView):
     """
     Ops Manager endpoint to update product stock.
@@ -119,6 +121,7 @@ class StockUpdateView(generics.UpdateAPIView):
         serializer.save()
 
 
+@extend_schema(tags=["Customer Pre-Order Management"])
 class PreOrderCreateView(generics.CreateAPIView):
     """
     Create a new pre-order for customers.
@@ -237,6 +240,7 @@ class PreOrderCreateView(generics.CreateAPIView):
         )
 
 
+@extend_schema(tags=["Customer Pre-Order Management"])
 class CancelOrderView(APIView):
     """
     Customer-only endpoint: Cancel an existing pre-order.
@@ -275,6 +279,7 @@ class CancelOrderView(APIView):
 
 
 @extend_schema(
+        tags=["Ops Manager Order Fulfillment"],
         parameters=[
             OpenApiParameter(
                 name="slot",
@@ -326,6 +331,7 @@ class OrderListBySlotView(generics.ListAPIView):
         return Response(serializer.data)
 
 
+@extend_schema(tags=["Ops Manager Stock Management"])
 class TopProductsReportView(APIView):
     """
     Restricted reporting endpoint: Show top products ordered within a date range.
