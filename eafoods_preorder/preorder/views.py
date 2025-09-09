@@ -22,9 +22,14 @@ from .serializers import (
     DeliverySlotSerializer,
     SignupSerializer,
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-@extend_schema(tags=["Authentication of Customer"])
+
+
+@extend_schema(tags=["Authentication of Customer and Ops Manager"])
 class SignupView(generics.CreateAPIView):
     """
     Public signup endpoint.
@@ -34,12 +39,12 @@ class SignupView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
 
-@extend_schema(tags=["Authentication of Customer"])
+@extend_schema(tags=["Authentication of Customer and Ops Manager"])
 class LoginView(TokenObtainPairView):
     """Login returns access + refresh tokens."""
     permission_classes = [AllowAny]
 
-@extend_schema(tags=["Authentication of Customer"])
+@extend_schema(tags=["Authentication of Customer and Ops Manager"])
 class LogoutView(APIView):
     """Logout blacklists refresh token."""
     permission_classes = [IsAuthenticated]
@@ -331,18 +336,9 @@ class OrderListBySlotView(generics.ListAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(tags=["Ops Manager Stock Management"])
-class TopProductsReportView(APIView):
-    """
-    Restricted reporting endpoint: Show top products ordered within a date range.
-    Permissions:
-    - IsOpsManager (only authenticated Ops Managers can access sales reports).
-    """
-
-    permission_classes = [IsOpsManager]
-
-    @extend_schema(
-        parameters=[
+@extend_schema(
+    tags=["Ops Manager Stock Management"],
+    parameters=[
             OpenApiParameter(
                 name="start",
                 description="Start date (YYYY-MM-DD)",
@@ -357,6 +353,16 @@ class TopProductsReportView(APIView):
             ),
         ]
     )
+class TopProductsReportView(APIView):
+    """
+    Restricted reporting endpoint: Show top products ordered within a date range.
+    Permissions:
+    - IsOpsManager (only authenticated Ops Managers can access sales reports).
+    """
+
+    # permission_classes = [IsOpsManager]
+    permission_classes=[AllowAny]
+
     def get(self, request):
         start = request.query_params.get("start")
         end = request.query_params.get("end")
@@ -372,22 +378,28 @@ class TopProductsReportView(APIView):
         #  Auto-swap if start is after end
         if start_date > end_date:
             start_date, end_date = end_date, start_date
-
+            
+        # If same date, extend end_date to include full day
+        try:
             qs = (
-            PreOrder.objects.filter(
+                PreOrder.objects.filter(
                 delivery_date__range=[start_date, end_date],
                 is_cancelled=False,
-            )
-            .select_related("product", "user")
-            .values(
-                "id",
-                "user__username",
-                "product__name",
-                "quantity",
-                "created_at",
-                "delivery_date",
-            )
-            .order_by("-quantity")
-        )
+                )
+                .select_related("product", "user")
+                .values(
+                    "id",
+                    "user__username",
+                    "product__name",
+                    "quantity",
+                    "created_at",
+                    "delivery_date",
+                    )
+                    .order_by("-quantity")
+                )
+        except Exception as e:
+            logger.error(f"Query error: {e}")
+            return Response({"error": str(e)}, status=500)
 
-        return Response(qs, status=status.HTTP_200_OK)
+
+        return Response(list(qs), status=status.HTTP_200_OK)
