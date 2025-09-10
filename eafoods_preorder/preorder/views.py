@@ -27,8 +27,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
-
 @extend_schema(tags=["Authentication of Customer and Ops Manager"])
 class SignupView(generics.CreateAPIView):
     """
@@ -360,8 +358,7 @@ class TopProductsReportView(APIView):
     - IsOpsManager (only authenticated Ops Managers can access sales reports).
     """
 
-    # permission_classes = [IsOpsManager]
-    permission_classes=[AllowAny]
+    permission_classes = [IsOpsManager]
 
     def get(self, request):
         start = request.query_params.get("start")
@@ -379,7 +376,6 @@ class TopProductsReportView(APIView):
         if start_date > end_date:
             start_date, end_date = end_date, start_date
             
-        # If same date, extend end_date to include full day
         try:
             qs = (
                 PreOrder.objects.filter(
